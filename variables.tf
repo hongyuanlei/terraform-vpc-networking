@@ -6,6 +6,9 @@ variable "environment" {
   description = "The Deployment environment"
 }
 
+variable "namespace" {
+  description = "The Namespace"
+}
 //Networking
 variable "vpc_cidr" {
   description = "The CIDR block of the vpc"
