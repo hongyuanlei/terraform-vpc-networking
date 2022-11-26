@@ -145,3 +145,70 @@ resource "aws_security_group" "default" {
   }
 }
 
+resource "aws_network_acl" "public" {
+  vpc_id = aws_vpc.vpc.id
+  tags   = {
+    Name        = "${var.namespace}-public-subnet-acl"
+    Environment = var.environment
+  }
+}
+
+resource "aws_network_acl_rule" "public_acl_outgoing" {
+  network_acl_id = aws_network_acl.public.id
+  egress         = true
+  rule_number    = 200
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+}
+
+resource "aws_network_acl_rule" "public_acl_incoming_http" {
+  network_acl_id = aws_network_acl.public.id
+  egress         = false
+  rule_number    = 200
+  protocol       = "tcp"
+  rule_action    = "allow"
+  from_port      = 80
+  to_port        = 80
+  cidr_block     = "0.0.0.0/0"
+}
+
+resource "aws_network_acl_rule" "public_acl_incoming_https" {
+  network_acl_id = aws_network_acl.public.id
+  egress         = false
+  rule_number    = 201
+  protocol       = "tcp"
+  rule_action    = "allow"
+  from_port      = 443
+  to_port        = 443
+  cidr_block     = "0.0.0.0/0"
+}
+
+resource "aws_network_acl_association" "public" {
+  count          = length(var.public_subnets_cidr)
+  network_acl_id = aws_network_acl.public.id
+  subnet_id      = element(aws_subnet.public_subnet.*.id, count.index)
+}
+
+resource "aws_network_acl" "private" {
+  vpc_id = aws_vpc.vpc.id
+  tags   = {
+    Name        = "${var.namespace}-private-subnet-acl"
+    Environment = var.environment
+  }
+}
+
+resource "aws_network_acl_rule" "private_outgoing" {
+  network_acl_id = aws_network_acl.private.id
+  egress         = true
+  rule_number    = "100"
+  protocol       = "all"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+}
+
+resource "aws_network_acl_association" "private" {
+  count          = length(var.private_subnets_cidr)
+  network_acl_id = aws_network_acl.private.id
+  subnet_id      = element(aws_subnet.private_subnet.*.id, count.index)
+}
