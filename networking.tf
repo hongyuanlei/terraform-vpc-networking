@@ -34,9 +34,9 @@ output "default_sg_id" {
 }
 
 output "security_groups_ids" {
-  value = "${module.networking.security_groups_ids}"
+  value = module.networking.security_groups_ids
 }
 
 output "public_route_table" {
-  value = "${module.networking.public_route_table}"
+  value = module.networking.public_route_table
 }
